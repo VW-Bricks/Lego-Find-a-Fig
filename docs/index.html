@@ -145,7 +145,7 @@
 <!-- Dynamic Container where the groups and images will be rendered -->
 <div id="galleryContainer"></div>
 
-<div class="brickset"><a href="https://www.brickset.com/" target="_blank"><img src="images/brickset.png" alt="Brickset.com"></a> </div>
+<div class="brickset"><a href="https://www.brickset.com/" target="_blank"><img src="images/Brickset.png" alt="Brickset.com"></a> </div>
 
 <div id="goodJobMessage" style="display: none;">
   <p>Good Job! <br> Bon travail!</p>
@@ -179,8 +179,8 @@
   // Check URL parameter (e.g., index.html?theme=space), default to 'castle' if not specified
   const urlParams = new URLSearchParams(window.location.search);
   const themeParam = urlParams.get('theme');
-  const activeTheme = (themeParam && themeData[themeParam.toLowerCase()]) 
-    ? themeParam.toLowerCase() 
+  const activeTheme = (themeParam && themeData[themeParam.toLowerCase()])
+    ? themeParam.toLowerCase()
     : 'castle';
 
   // Render function to dynamically generate sections and images
@@ -188,8 +188,8 @@
     const data = themeData[themeKey];
     if (!data) return;
 
-    galleryContainer.innerHTML = ''; 
-    message.style.display = 'none';   
+    galleryContainer.innerHTML = '';
+    message.style.display = 'none';
 
     data.groups.forEach((group, groupIdx) => {
       // Create Section Title
@@ -205,7 +205,7 @@
 
       for (let i = 1; i <= group.count; i++) {
         const overallImgIndex = group.startIndex + (i - 1);
-        
+
         const gridItem = document.createElement('div');
         gridItem.className = 'grid-item';
 
