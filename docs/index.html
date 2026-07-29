@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Fig Finder</title>
+<style>
+
+  /* Flexbox Container for Text and Socials */
+  .header-socials {
+    display: flex;
+    justify-content: space-between; /* Pushes text to one side and socials to the other */
+    align-items: center; /* Vertically centers the text and images */
+    padding: 10px 20px;
+  }
+  .social-text {
+    flex-grow: 1; /* Allows this element to take up the available space */
+    text-align: center; /* Centers the text within its flexible space */
+  }
+
+  /* Socials Link Styling */
+  .social-links a {
+    margin: 0 15px;
+  }
+  .social-links a img {
+    width: 40px; /* Set a fixed size for the social icons */
+    height: 40px;
+    border: none;
+  }
+
+  /* Basic styling for the grid container */
+  .grid-container {
+    display: grid;
+    gap: 10px; /* Adjust the gap between images */
+    padding: 10px; /* Padding around the grid */
+    box-sizing: border-box;
+  }
+
+  /* Styling for the images within the grid */
+  .grid-item {
+    position: relative; /* Important for positioning the checkbox */
+    height: 300px;
+  }
+
+  /* Styling for the images within the grid */
+  .grid-item img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* object-fit: contain; resizes the image to fit without being cropped */
+    object-fit: contain;
+  }
+
+  .grid-item input[type="checkbox"] {
+      position: absolute; /* Positions the checkbox relative to its parent */
+      top: 10px;
+      left: 10px;
+      z-index: 10; /* Ensures the checkbox is on top of the image */
+      width: 25px; /* Adjust size */
+      height: 25px; /* Adjust size */
+      transform: scale(2.0);
+  }
+
+  /* Media queries for responsiveness */
+  @media (max-width: 600px) {
+    .grid-container {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+  }
+
+  @media (min-width: 601px) and (max-width: 1024px) {
+    .grid-container {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .grid-container {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+ /* Styling for the brickset image */
+ .brickset {
+   display: flex; /* Enable flexbox for centering */
+   justify-content: center; /* Center the content horizontally */
+   margin-top: 20px; /* Add some top margin for spacing */
+   margin-bottom: 20px; /* Add some bottom margin for spacing */
+ }
+
+   .brickset img {
+     display: block; /* Ensures the image behaves as a block-level element */
+     max-width: 400px; /* Limit the maximum width to 400px */
+     height: auto; /* Maintain aspect ratio */
+ }
+
+ #goodJobMessage {
+   position: fixed; /* Positions the element relative to the viewport */
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%); /* Centers the element perfectly */
+   background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+   color: white;
+   padding: 20px;
+   border-radius: 10px;
+   text-align: center;
+   font-size: 2em;
+   z-index: 1000; /* Ensures the message is on top of other content */
+}
+
+#resetButton {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header-socials">
+  <div class="social-text">
+    <h1>Can you find these minifigures?<BR>
+	Pouvez-vous trouver ces minifigurines?</h1>
+  </div>
+  <div class="social-links">
+    <h2>Follow / Suivre les VW Bricks</h2>
+    <a href="https://www.instagram.com/vw_bricks" target="_blank"><img src="images/instagram.png" alt="Instagram"></a>
+    <a href="https://www.youtube.com/@VWBricks" target="_blank"><img src="images/youtube.png" alt="Youtube"></a>
+    <a href="https://www.flickr.com/photos/jeffvw/" target="_blank"><img src="images/Flickr.png" alt="Flickr"></a>
+  </div>
+</div>
+
+<!-- Dynamic Container where the groups and images will be rendered -->
+<div id="galleryContainer"></div>
+
+<div class="brickset"><a href="https://www.brickset.com/" target="_blank"><img src="images/brickset.png" alt="Brickset.com"></a> </div>
+
+<div id="goodJobMessage" style="display: none;">
+  <p>Good Job! <br> Bon travail!</p>
+  <div> <button id="resetButton">Reset</button> </div>
+</div>
+
+<script>
+  // Dataset definitions mapping out groups and image counts per group
+  const themeData = {
+    castle: {
+      folder: "Castle",
+      groups: [
+        { name: "Group 1 / Groupe 1", count: 13, startIndex: 1 },
+        { name: "Group 2 / Groupe 2", count: 14, startIndex: 14 },
+        { name: "Group 3 / Groupe 3", count: 13, startIndex: 28 }
+      ]
+    },
+    space: {
+      folder: "Space",
+      groups: [
+        { name: "Group 1 / Groupe 1", count: 12, startIndex: 1 },
+        { name: "Group 2 / Groupe 2", count: 12, startIndex: 13 }
+      ]
+    }
+  };
+
+  const galleryContainer = document.getElementById('galleryContainer');
+  const message = document.getElementById('goodJobMessage');
+  const resetButton = document.getElementById('resetButton');
+
+  // Check URL parameter (e.g., index.html?theme=space), default to 'castle' if not specified
+  const urlParams = new URLSearchParams(window.location.search);
+  const themeParam = urlParams.get('theme');
+  const activeTheme = (themeParam && themeData[themeParam.toLowerCase()]) 
+    ? themeParam.toLowerCase() 
+    : 'castle';
+
+  // Render function to dynamically generate sections and images
+  function renderGallery(themeKey) {
+    const data = themeData[themeKey];
+    if (!data) return;
+
+    galleryContainer.innerHTML = ''; 
+    message.style.display = 'none';   
+
+    data.groups.forEach((group, groupIdx) => {
+      // Create Section Title
+      const h2 = document.createElement('h2');
+      h2.textContent = group.name;
+      galleryContainer.appendChild(h2);
+
+      // Create Grid Container
+      const gridContainer = document.createElement('div');
+      gridContainer.className = 'grid-container';
+
+      const pageNumber = groupIdx + 1;
+
+      for (let i = 1; i <= group.count; i++) {
+        const overallImgIndex = group.startIndex + (i - 1);
+        
+        const gridItem = document.createElement('div');
+        gridItem.className = 'grid-item';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+
+        const img = document.createElement('img');
+        img.src = `images/${data.folder}/Page ${pageNumber} Fig ${i}.png`;
+        img.alt = `Image ${overallImgIndex}`;
+
+        gridItem.appendChild(checkbox);
+        gridItem.appendChild(img);
+        gridContainer.appendChild(gridItem);
+      }
+
+      galleryContainer.appendChild(gridContainer);
+    });
+
+    attachCheckboxListeners();
+  }
+
+  // Check if all checkboxes on the current page are checked
+  function areAllCheckboxesChecked() {
+    const checkboxes = galleryContainer.querySelectorAll('input[type="checkbox"]');
+    if (checkboxes.length === 0) return false;
+    for (const checkbox of checkboxes) {
+      if (!checkbox.checked) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Attach dynamic change event listeners to checkboxes
+  function attachCheckboxListeners() {
+    const checkboxes = galleryContainer.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        if (areAllCheckboxesChecked()) {
+          message.style.display = 'block';
+        } else {
+          message.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Reset button logic
+  resetButton.addEventListener('click', () => {
+    const checkboxes = galleryContainer.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    message.style.display = 'none';
+  });
+
+  // Initial build based on URL query or default
+  renderGallery(activeTheme);
+
+</script>
+
+</body>
+</html>
